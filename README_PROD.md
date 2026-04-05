@@ -8,18 +8,6 @@
 - проект лежит в `/home/max/funpay-mvp`
 - запуск выполняется из терминала Ubuntu в WSL
 
-Ниже уже учтены текущие изменения в репозитории:
-
-- в `infra/docker-compose.prod.yml` добавлены `plugin_autobalance` и `plugin_autolotdeactivator`;
-- в `.env` добавлен `APP_TIMEZONE=Europe/Moscow`;
-- схема провайдеров зафиксирована так:
-  - `AutoStars` -> HTTP/Webhook provider Stars
-  - `AutoSteamPoints` -> HTTP provider Steam Points
-  - `Steam Gifts Auto Lot` -> HTTP provider NS.Gifts
-  - `AutoRent Steam` -> пул Steam-аккаунтов
-  - `Fragment Stars Buyer` -> HTTP provider покупки Stars
-
-
 ## 1. Откуда запускать проект
 
 Твой рабочий путь внутри WSL:
