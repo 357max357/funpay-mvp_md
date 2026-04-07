@@ -1539,7 +1539,7 @@
 
 ---
 
-## 5.10 AutoRefund (`autorefund`)
+## 5.10 AutoRefund (`autorefund`) (еще не доделал)
 
 ### Что делает плагин простыми словами
 
@@ -1563,12 +1563,6 @@
 - включить в `/plugins` можно;
 - сам плагин работать может;
 - но настраивается он в основном через внутренний конфиг и серверную логику.
-
-### Что важно знать обычному пользователю
-Если ты не разработчик, этот плагин лучше тестировать:
-- на отдельном тестовом пользователе;
-- на тестовых сделках;
-- с обязательной проверкой логов.
 
 ---
 
@@ -1608,47 +1602,6 @@
 2. включает нужный плагин;
 3. вводит команды настройки;
 4. делает тестовый заказ.
-
----
-
-## Вариант C — безопасный тест без реальных действий
-
-Если в `.env` выставить:
-
-```text
-DRY_RUN=1
-```
-
-то логика будет выполняться, но реальные действия в FunPay отправляться не будут.
-
----
-
-# 7. Как выдавать доступ тестерам без подписки
-
-Основной способ — команда `/grant`.
-
-## Пример выдачи доступа ко всем рабочим плагинам
-
-Если у тестера Telegram ID `123456789`, можно выдать доступ так:
-
-```text
-/grant 123456789 autostars 365
-/grant 123456789 autobalance 365
-/grant 123456789 autolotdeactivator 365
-/grant 123456789 autosteampoints 365
-/grant 123456789 autorent_steam 365
-/grant 123456789 fragment_stars_buyer 365
-/grant 123456789 steamgifts_autolot 365
-/grant 123456789 autorefund 365
-/grant 123456789 autolog 365
-/grant 123456789 autopricemonitor 365
-```
-
-После этого тестер должен:
-1. открыть `/plugins`;
-2. включить нужные плагины вручную.
-
----
 
 # 8. Короткие сценарии тестирования по плагинам
 
@@ -1723,31 +1676,6 @@ DRY_RUN=1
 3. Тестировать только на безопасных сценариях.
 4. Смотреть логи.
 
----
-
-# 9. Где смотреть логи
-
-Из папки `infra`:
-
-```powershell
-docker compose logs -f control_bot
-docker compose logs -f funpay_connector
-docker compose logs -f plugin_router
-docker compose logs -f outbox_dispatcher
-docker compose logs -f plugin_autostars
-docker compose logs -f plugin_autosteampoints
-docker compose logs -f plugin_steamgifts_autolot
-docker compose logs -f plugin_autorent_steam
-docker compose logs -f plugin_fragment_stars_buyer
-docker compose logs -f plugin_autobalance
-docker compose logs -f plugin_autolotdeactivator
-docker compose logs -f plugin_autolog
-docker compose logs -f plugin_autopricemonitor
-docker compose logs -f plugin_autorefund
-```
-
----
-
 # 10. Что лучше сделать перед реальными тестами
 
 1. Выдавать тестерам только рабочие плагины.
@@ -1758,21 +1686,3 @@ docker compose logs -f plugin_autorefund
    - `autopricemonitor` — `notify_only`.
 4. Не запускать первые тесты сразу на боевых дорогих лотах.
 5. После выдачи доступа всегда напоминать тестеру зайти в `/plugins` и включить плагин.
-
----
-
-# 11. Самый короткий сценарий для тестера
-
-## Что делает администратор
-1. Выдает доступ через `/grant`.
-2. Пишет тестеру, какой плагин включить.
-
-## Что делает тестер
-1. `/start`
-2. `/accountset <golden_key>`
-3. `/accountcheck`
-4. `/listenon`
-5. `/plugins`
-6. включает нужный плагин
-7. вводит команды настройки
-8. делает тестовый заказ
