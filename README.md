@@ -71,20 +71,6 @@
 - `autolog`
 - `autopricemonitor`
 
-Плагины, которые есть в compose/каталоге, но лучше не использовать для нормального теста:
-
-- `autoreply`
-- `ask_tg_username`
-- `antifraud`
-- `autodelivery`
-- `autoreview`
-- `priceguard`
-- `dailysummary`
-- `blacklist`
-- `unpaidreminder`
-
----
-
 ## 4. Команды по рабочим плагинам
 
 ### 4.1 AutoStars (`autostars`)
