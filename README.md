@@ -1,64 +1,185 @@
-# Инструкция по тестированию FunPay-бота и плагинов
+# Инструкция по использованию FunPay-бота и плагинов
 
-### Важные правила
+## Для кого этот документ
 
-Плагин начнет реально работать только если одновременно выполнены оба условия:
+Этот файл написан для человека, который **не является программистом**, а просто хочет использовать бота для своих услуг на FunPay:
 
-- пользователю выдан доступ к плагину;
-- пользователь вручную включил плагин в `/plugins`.
+- привязать свой аккаунт;
+- включить нужные плагины;
+- настроить лоты;
+- протестировать работу;
+- выдать доступ тестерам без подписки.
 
 ---
 
-## 2. Базовые команды бота
+# 1. Как в целом работает бот
 
-### `/start`
+У бота есть две части:
+
+1. **Telegram-бот** — через него ты вводишь команды и настраиваешь плагины.
+2. **Сервисы в фоне** — они слушают события FunPay и автоматически выполняют нужные действия.
+
+Общая схема такая:
+
+1. Ты привязываешь свой FunPay-аккаунт через `/accountset`.
+2. Проверяешь привязку через `/accountcheck`.
+3. Включаешь прослушивание событий через `/listenon`.
+4. Выдаешь себе или тестеру доступ к нужному плагину через `/grant`.
+5. Пользователь включает плагин в меню `/plugins`.
+6. После этого плагин начинает работать:
+   - либо на новых заказах;
+   - либо в фоне по таймеру;
+   - либо и так, и так.
+
+## Очень важное правило
+
+Плагин начнет работать только если одновременно выполнены **оба** условия:
+
+- пользователю **выдан доступ** к плагину;
+- пользователь **включил плагин** в `/plugins`.
+
+Если доступ есть, а плагин выключен — ничего не произойдет.  
+Если плагин включен, но доступ не выдан — тоже ничего не произойдет.
+
+---
+
+# 2. Базовые команды бота
+
+## `/start`
 Открывает стартовое меню бота.
 
-### `/help`
+### Для чего нужно
+Это первая команда, с которой обычно начинают работу.
+
+---
+
+## `/help`
 Показывает справку и меню.
 
-### `/accountset <golden_key> [user_agent]`
-Сохраняет аккаунт FunPay.
+### Для чего нужно
+Если забыл команды или просто хочешь открыть интерфейс заново.
 
-Параметры:
-- `golden_key` — cookie/ключ FunPay;
-- `user_agent` — необязательно.
+---
 
-Пример:
+## `/accountset <golden_key> [user_agent]`
+Сохраняет твой аккаунт FunPay.
+
+### Что делает простыми словами
+Бот запоминает, под каким аккаунтом FunPay ему работать.
+
+### Параметры
+- `golden_key` — это ключ доступа к твоему аккаунту FunPay.
+- `user_agent` — необязательный параметр. Это строка браузера, из которого ты обычно заходишь на FunPay.
+
+### Где взять `golden_key`
+Обычно его берут из cookies браузера для сайта FunPay.
+
+### Где взять `user_agent`
+Его можно:
+- не указывать вообще;
+- либо взять из браузера/расширения, которое показывает User-Agent.
+
+### Пример
 ```text
+/accountset abcdef123456
 /accountset abcdef123456 Mozilla/5.0
 ```
 
-### `/accountcheck`
-Проверяет, что привязанный FunPay-аккаунт работает.
+---
 
-### `/listenon`
-Включает слушатель событий FunPay.
+## `/accountcheck`
+Проверяет, что аккаунт FunPay привязан правильно.
 
-### `/listenoff`
-Выключает слушатель событий FunPay.
+### Что делает
+Бот пытается войти в FunPay и проверить, что ключ рабочий.
 
-### `/plugins`
-Показывает список плагинов. Через это меню пользователь может включать и выключать доступные плагины.
+### Когда использовать
+Сразу после `/accountset`.
 
-### `/grant <tg_user_id> <plugin> <days>`
-Админ-команда. Выдает пользователю доступ к плагину без оплаты.
+---
 
-Параметры:
-- `tg_user_id` — Telegram ID пользователя;
-- `plugin` — код плагина;
-- `days` — срок доступа в днях.
+## `/listenon`
+Включает прослушивание событий FunPay.
 
-Пример:
+### Что делает
+После этой команды бот начинает следить за:
+- новыми заказами;
+- сообщениями;
+- изменениями по сделкам.
+
+### Когда использовать
+После успешного `/accountcheck`.
+
+---
+
+## `/listenoff`
+Выключает прослушивание событий FunPay.
+
+### Что делает
+Бот перестает следить за новыми заказами и событиями.
+
+### Когда использовать
+Если хочешь временно остановить автоматическую работу.
+
+---
+
+## `/plugins`
+Открывает список доступных плагинов.
+
+### Что делает
+Через это меню пользователь:
+- видит, к каким плагинам есть доступ;
+- включает и выключает их.
+
+### Важно
+Даже если администратор выдал доступ через `/grant`, пользователь все равно должен сам зайти в `/plugins` и включить нужный плагин.
+
+---
+
+## `/grant <tg_user_id> <plugin> <days>`
+Админ-команда для выдачи доступа к плагину без оплаты.
+
+### Что делает
+Позволяет дать тестовому пользователю или себе доступ к плагину на нужное количество дней.
+
+### Параметры
+- `tg_user_id` — Telegram ID пользователя.
+- `plugin` — код плагина.
+- `days` — на сколько дней выдать доступ.
+
+### Где взять `tg_user_id`
+- попросить пользователя прислать свой Telegram ID;
+- узнать через стороннего info-бота;
+- либо посмотреть в логах/базе, если ты администратор.
+
+### Какие коды плагинов использовать
+Рабочие коды:
+
+```text
+autostars
+autobalance
+autolotdeactivator
+autosteampoints
+autorent_steam
+fragment_stars_buyer
+steamgifts_autolot
+autorefund
+autolog
+autopricemonitor
+```
+
+### Пример
 ```text
 /grant 123456789 autostars 30
 ```
 
 ---
 
-## 3. Реально поддерживаемые плагины
+# 3. Какие плагины реально использовать
 
-Рабочие плагины, которые есть в текущем коде:
+## Рабочие плагины
+
+Это плагины, которые подключены в текущем коде и реально поддерживаются:
 
 - `autostars`
 - `autobalance`
@@ -71,129 +192,514 @@
 - `autolog`
 - `autopricemonitor`
 
-## 4. Команды по рабочим плагинам
+## Плагины, которые лучше не выдавать тестерам
 
-### 4.1 AutoStars (`autostars`)
+Они могут присутствовать в compose или каталогах проекта, но не подключены как полноценные рабочие обработчики:
 
-Назначение: продажа Telegram Stars по лотам FunPay.
+- `autoreply`
+- `ask_tg_username`
+- `antifraud`
+- `autodelivery`
+- `autoreview`
+- `priceguard`
+- `dailysummary`
+- `blacklist`
+- `unpaidreminder`
 
-#### Команды
+---
 
-##### `/autostars_sources`
-Показывает список источников отправки Stars.
+# 4. Что чаще всего нужно искать на FunPay и в настройках
 
-##### `/autostars_lots`
-Показывает список лотов AutoStars.
+Ниже параметры, которые часто встречаются в командах.
 
-##### `/autostars_addlot <lot_id> <stars_per_unit> [source_id]`
+## `lot_id`
+Это ID лота FunPay.
+
+### Где взять
+Обычно его можно найти:
+- в URL страницы лота;
+- в панели продавца FunPay;
+- в ссылке на конкретный лот.
+
+## `my_lot_id`
+Это тоже ID твоего лота на FunPay.  
+По сути то же самое, что `lot_id`, просто в некоторых командах он называется так для наглядности.
+
+## `category_id`
+Это ID категории FunPay.
+
+### Где взять
+Его обычно берут из URL категории на FunPay.
+
+## `base_url`
+Это адрес внешнего сервиса или провайдера.
+
+### Где взять
+Его выдает тот сервис, через который работает доставка или интеграция.
+
+## `token`
+Это токен доступа к внешнему сервису.
+
+### Где взять
+Его выдает внешний сервис/провайдер.
+
+## `source_id`
+Это внутреннее имя источника отправки.
+
+### Где взять
+Его **не нужно где-то искать**. Ты придумываешь его сам.
+
+### Примеры
+- `default`
+- `reserve1`
+- `stars_main`
+
+## `provider_id`
+Это внутреннее имя провайдера баланса.
+
+### Где взять
+Его тоже придумываешь ты сам.
+
+### Пример
+- `stars`
+- `steam`
+- `nsgifts`
+
+## `resource_key`
+Это внутреннее имя ресурса, за которым следит AutoBalance.
+
+### Где взять
+Его тоже придумываешь ты сам.
+
+### Пример
+- `stars`
+- `steam_points`
+- `gift_stock`
+
+## `ns_sku`
+Это код товара у внешнего поставщика для Steam Gifts.
+
+### Где взять
+В кабинете или документации поставщика.
+
+## `game_key`
+Это внутреннее название игры для AutoRent Steam.
+
+### Где взять
+Его придумываешь ты сам и используешь одинаково:
+- в лоте аренды;
+- в аккаунтах пула.
+
+### Пример
+- `cs2`
+- `rust`
+- `dota2`
+
+## `target_id`
+Это ID цели в AutoPriceMonitor.
+
+### Где взять
+Появляется после создания цели. Его показывает команда `/apm_status`.
+
+## `account_id`
+Это ID аккаунта в AutoRent Steam.
+
+### Где взять
+Его показывает команда `/autorent_accounts`.
+
+---
+
+# 5. Подробное описание каждого рабочего плагина
+
+---
+
+## 5.1 AutoStars (`autostars`)
+
+### Что делает плагин простыми словами
+
+Этот плагин нужен для автоматической продажи **Telegram Stars**.
+
+Он умеет:
+- увидеть оплаченный заказ на нужном лоте;
+- понять, сколько Stars надо отправить;
+- запросить у покупателя `@username`, если его нет;
+- отправить Stars через внешний сервис;
+- не отправлять одну и ту же выдачу повторно;
+- показывать понятный текст после успешной отправки.
+
+### Когда он срабатывает
+
+Плагин начинает работать, когда:
+- у тебя включен слушатель `/listenon`;
+- у тебя есть заказ на лоте, который ты привязал к AutoStars;
+- у покупателя есть нужные данные для доставки, обычно `@username`.
+
+### Как он это делает с помощью команд
+
+Чтобы AutoStars вообще мог работать, нужны следующие шаги:
+
+1. **Привязать лот к количеству Stars**  
+   Делается командой:
+   ```text
+   /autostars_addlot <lot_id> <stars_per_unit> [source_id]
+   ```
+   Это говорит боту:  
+   «Если кто-то купил этот лот, выдай вот столько Stars за 1 единицу».
+
+2. **Настроить источник отправки Stars**  
+   Делается командой:
+   ```text
+   /autostars_source_http_add <source_id> <base_url> <token> ...
+   ```
+   Это говорит боту:  
+   «Вот через какой внешний сервис отправлять Stars».
+
+3. **Проверить источники**
+   ```text
+   /autostars_sources
+   ```
+   Так ты видишь, какие источники уже настроены.
+
+4. **Проверить привязанные лоты**
+   ```text
+   /autostars_lots
+   ```
+   Так ты видишь, какие именно лоты обрабатывает AutoStars.
+
+5. **Настроить текст запроса username**
+   ```text
+   /autostars_request_text <текст>
+   ```
+   Если бот не нашел `@username`, он попросит его этим текстом.
+
+6. **Настроить текст после доставки**
+   ```text
+   /autostars_delivered_text <текст>
+   ```
+   После успешной отправки бот напишет это сообщение.
+
+### Самые важные команды для обычного пользователя
+
+- `/autostars_addlot`
+- `/autostars_lots`
+- `/autostars_source_http_add`
+- `/autostars_sources`
+- `/autostars_request_text`
+- `/autostars_delivered_text`
+
+### Команды плагина
+
+#### `/autostars_lots`
+Показывает список всех лотов, которые обрабатывает AutoStars.
+
+### Когда использовать
+Если хочешь проверить, правильно ли добавил лоты.
+
+---
+
+#### `/autostars_addlot <lot_id> <stars_per_unit> [source_id]`
 Добавляет или обновляет лот.
 
-Параметры:
-- `lot_id` — ID лота FunPay;
-- `stars_per_unit` — сколько Stars выдавать за 1 единицу;
-- `source_id` — необязательно, по умолчанию `default`.
+### Что означает команда простыми словами
+Ты говоришь боту:
+«Вот этот лот — это продажа Stars. За одну единицу товара нужно отправлять столько-то Stars».
 
-Пример:
+### Параметры
+- `lot_id` — ID лота FunPay.
+- `stars_per_unit` — сколько Stars выдавать за 1 единицу товара.
+- `source_id` — через какой источник отправлять Stars. Необязательный параметр.
+
+### Где взять параметры
+- `lot_id` — взять из FunPay, из ссылки на лот.
+- `stars_per_unit` — ставишь сам, исходя из того, что продаешь.
+- `source_id` — придумываешь сам, либо используешь `default`.
+
+### Пример
 ```text
 /autostars_addlot 123456 100
 /autostars_addlot 123456 100 reserve1
 ```
 
-##### `/autostars_dellot <lot_id>`
-Удаляет привязку лота.
+---
 
-##### `/autostars_source_http_add <source_id> <base_url> <token> [daily_limit_stars] [max_stars_per_tx] [timeout_sec] [min_balance_alert]`
-Добавляет резервный HTTP-source.
+#### `/autostars_dellot <lot_id>`
+Удаляет лот из AutoStars.
 
-Пример:
+### Что делает
+После этого плагин перестанет автоматически обрабатывать этот лот.
+
+### Параметры
+- `lot_id` — ID лота FunPay.
+
+---
+
+#### `/autostars_sources`
+Показывает источники отправки Stars.
+
+### Что делает
+Показывает:
+- какие источники есть;
+- какой у них URL;
+- есть ли токен;
+- какие лимиты установлены.
+
+### Когда использовать
+Когда хочешь проверить, через какой сервис идет отправка.
+
+---
+
+#### `/autostars_source_http_add <source_id> <base_url> <token> [daily_limit_stars] [max_stars_per_tx] [timeout_sec] [min_balance_alert]`
+Добавляет HTTP-источник отправки Stars.
+
+### Что означает команда простыми словами
+Ты говоришь боту:
+«Вот внешний сервис, через который нужно отправлять Stars».
+
+### Параметры
+- `source_id` — имя источника, придумываешь сам.
+- `base_url` — адрес внешнего сервиса.
+- `token` — токен доступа к сервису.
+- `daily_limit_stars` — максимум Stars в день через этот источник.
+- `max_stars_per_tx` — максимум Stars за одну отправку.
+- `timeout_sec` — сколько секунд ждать ответ от сервиса.
+- `min_balance_alert` — при каком балансе считать его низким.
+
+### Где взять параметры
+- `source_id` — придумать самому.
+- `base_url` — взять у провайдера.
+- `token` — взять у провайдера.
+- остальные числа — задаешь сам под свои правила.
+
+### Пример
 ```text
 /autostars_source_http_add reserve1 https://provider.example/api TOKEN 0 0 20 0
 ```
 
-##### `/autostars_source_del <source_id>`
-Удаляет source.
+---
 
-##### `/autostars_request_text <текст>`
-Меняет текст запроса `@username` у покупателя.
+#### `/autostars_source_del <source_id>`
+Удаляет источник отправки.
 
-##### `/autostars_delivered_text <текст>`
-Меняет текст успешной доставки.
+### Что делает
+После этого источник исчезнет из настроек.
 
-Поддерживаются шаблоны:
-- `{username}`
-- `{stars}`
-- `{tx}`
-
-Пример:
-```text
-/autostars_delivered_text Stars отправлены: {stars}, username: {username}, tx: {tx}
-```
-
-#### Минимальный тест
-1. Выдать доступ к `autostars`.
-2. Включить плагин в `/plugins`.
-3. Настроить лот:
-```text
-/autostars_addlot 123456 100
-```
-4. Сделать тестовый заказ.
-5. Проверить логи `plugin_autostars` и `autostars_provider_http`.
+### Параметры
+- `source_id` — имя источника, которое ты сам задавал.
 
 ---
 
-### 4.2 Fragment Stars Buyer (`fragment_stars_buyer`)
+#### `/autostars_request_text <текст>`
+Меняет текст, которым бот просит покупателя прислать `@username`.
 
-Назначение: автоматическая закупка Stars по стратегии.
+### Что делает
+Если бот не увидит нужный username, он отправит именно этот текст.
 
-#### Команды
+### Пример
+```text
+/autostars_request_text Напиши, пожалуйста, свой @username для отправки Stars
+```
 
-##### `/fragment_help`
-Справка.
+---
 
-##### `/fragment_status`
+#### `/autostars_delivered_text <текст>`
+Меняет текст после успешной отправки Stars.
+
+### Что делает
+После доставки бот пишет покупателю это сообщение.
+
+### Допустимые вставки
+- `{username}` — username покупателя;
+- `{stars}` — сколько Stars отправлено;
+- `{tx}` — ID/номер операции.
+
+### Пример
+```text
+/autostars_delivered_text Stars отправлены: {stars}. Получатель: {username}. Операция: {tx}
+```
+
+### Минимальный тест
+1. Выдать доступ к `autostars`.
+2. Включить плагин в `/plugins`.
+3. Настроить источник отправки.
+4. Привязать тестовый лот через `/autostars_addlot`.
+5. Сделать оплаченный тестовый заказ.
+6. Проверить логи `plugin_autostars` и `autostars_provider_http`.
+
+---
+
+## 5.2 Fragment Stars Buyer (`fragment_stars_buyer`)
+
+### Что делает плагин простыми словами
+
+Этот плагин не продает, а **закупает Stars** по стратегии.
+
+Он:
+- следит за ценой;
+- покупает Stars только если цена подходит;
+- ограничивает закупку по лимитам;
+- умеет работать в безопасном `mock` режиме;
+- ведет локальный учет купленного объема.
+
+### Когда он срабатывает
+
+Он работает в фоне по таймеру.
+
+### Как он это делает с помощью команд
+
+Чтобы он начал работать, обычно нужно:
+
+1. Выбрать режим:
+   ```text
+   /fragment_provider mock
+   ```
+   или
+   ```text
+   /fragment_provider http
+   ```
+
+2. Если нужен реальный провайдер — подключить его:
+   ```text
+   /fragment_http_set <base_url> <token> [timeout_sec]
+   ```
+
+3. Если нужен тест без реальных покупок — задать mock-цену и объем:
+   ```text
+   /fragment_mock_setprice <ton_per_star>
+   /fragment_mock_setavail <stars>
+   ```
+
+4. Включить стратегию:
+   ```text
+   /fragment_strategy_on <price_ton_per_star> <buy_stars> [min_interval_sec] [max_inventory_stars] [max_total_ton]
+   ```
+
+5. При необходимости настроить риски:
+   ```text
+   /fragment_risk_set <daily_limit_ton> <slippage_bps> <stoploss_window_sec> <stoploss_drop_percent> <halt_minutes>
+   ```
+
+6. Проверять статус:
+   ```text
+   /fragment_status
+   ```
+
+### Самые важные команды для обычного пользователя
+
+- `/fragment_provider`
+- `/fragment_http_set`
+- `/fragment_mock_setprice`
+- `/fragment_mock_setavail`
+- `/fragment_strategy_on`
+- `/fragment_strategy_off`
+- `/fragment_status`
+
+### Команды плагина
+
+#### `/fragment_help`
+Показывает справку.
+
+---
+
+#### `/fragment_status`
 Показывает текущий статус стратегии.
 
-##### `/fragment_strategy_on <price_ton_per_star> <buy_stars> [min_interval_sec] [max_inventory_stars] [max_total_ton]`
+### Что показывает
+- включена ли стратегия;
+- какой режим выбран;
+- какая цена стоит в лимите;
+- какие ограничения заданы;
+- нет ли принудительной паузы (`halt`).
+
+---
+
+#### `/fragment_strategy_on <price_ton_per_star> <buy_stars> [min_interval_sec] [max_inventory_stars] [max_total_ton]`
 Включает стратегию.
 
-Пример:
+### Что означает команда простыми словами
+Ты говоришь:
+«Покупай Stars, если цена не выше вот этой, и покупай по столько-то за раз».
+
+### Параметры
+- `price_ton_per_star` — максимальная допустимая цена за 1 Star.
+- `buy_stars` — сколько Stars покупать за одну операцию.
+- `min_interval_sec` — минимальная пауза между покупками.
+- `max_inventory_stars` — максимум Stars в запасе.
+- `max_total_ton` — максимум TON, который можно потратить.
+
+### Где взять параметры
+Их не нужно где-то искать — это твоя стратегия, ты задаешь ее сам.
+
+### Пример
 ```text
 /fragment_strategy_on 0.015 50 300 1000 10
 ```
 
-##### `/fragment_strategy_off`
+---
+
+#### `/fragment_strategy_off`
 Выключает стратегию.
 
-##### `/fragment_risk_set <daily_limit_ton> <slippage_bps> <stoploss_window_sec> <stoploss_drop_percent> <halt_minutes>`
-Настраивает риск-параметры.
+---
 
-Пример:
-```text
-/fragment_risk_set 10 300 3600 5 60
-```
+#### `/fragment_risk_set <daily_limit_ton> <slippage_bps> <stoploss_window_sec> <stoploss_drop_percent> <halt_minutes>`
+Задает ограничения риска.
 
-##### `/fragment_provider <mock|http>`
-Выбирает тип провайдера.
+### Что означает команда простыми словами
+Ты говоришь:
+«Не трать слишком много за день и ставь паузу, если рынок ведет себя плохо».
 
-##### `/fragment_http_set <base_url> <token> [timeout_sec]`
-Сохраняет HTTP-провайдер.
+### Параметры
+- `daily_limit_ton` — максимум TON в день.
+- `slippage_bps` — допустимое проскальзывание.
+- `stoploss_window_sec` — за какой период следить за просадкой.
+- `stoploss_drop_percent` — какой процент падения считать опасным.
+- `halt_minutes` — на сколько минут остановить стратегию.
 
-##### `/fragment_http_clear`
-Очищает HTTP-настройки.
+---
 
-##### `/fragment_halt_clear`
-Снимает halt.
+#### `/fragment_provider <mock|http>`
+Выбирает режим работы.
 
-##### `/fragment_mock_setprice <ton_per_star>`
-Задает mock-цену.
+### Значения
+- `mock` — безопасный тестовый режим;
+- `http` — реальный режим через внешний сервис.
 
-##### `/fragment_mock_setavail <stars>`
-Задает доступный объем Stars в mock-режиме.
+---
 
-##### `/fragment_inventory_reset`
-Сбрасывает inventory и историю.
+#### `/fragment_http_set <base_url> <token> [timeout_sec]`
+Подключает реального провайдера.
 
-#### Минимальный тест без реального провайдера
+### Параметры
+- `base_url` — адрес сервиса;
+- `token` — токен;
+- `timeout_sec` — время ожидания ответа.
+
+---
+
+#### `/fragment_http_clear`
+Очищает настройки реального провайдера.
+
+---
+
+#### `/fragment_mock_setprice <ton_per_star>`
+Задает тестовую цену в `mock`.
+
+---
+
+#### `/fragment_mock_setavail <stars>`
+Задает тестовый доступный объем Stars в `mock`.
+
+---
+
+#### `/fragment_halt_clear`
+Снимает аварийную паузу.
+
+---
+
+#### `/fragment_inventory_reset`
+Сбрасывает внутренний учет.
+
+### Безопасный тест для новичка
 ```text
 /fragment_provider mock
 /fragment_mock_setprice 0.010
@@ -204,219 +710,570 @@
 
 ---
 
-### 4.3 AutoSteamPoints (`autosteampoints`)
+## 5.3 AutoSteamPoints (`autosteampoints`)
 
-Назначение: обработка заказов Steam Points через внешний HTTP provider.
+### Что делает плагин простыми словами
 
-#### Команды
+Этот плагин автоматизирует продажу **Steam Points**.
 
-##### `/autosteampoints_help`
-Справка.
+Он:
+- отслеживает заказы по указанным лотам;
+- считает, сколько points нужно выдать;
+- отправляет запрос внешнему поставщику;
+- ждет результат;
+- может повторно пробовать отложенные задачи.
 
-##### `/autosteampoints_cfg`
-Текущий конфиг.
+### Когда он срабатывает
 
-##### `/autosteampoints_http_set <base_url> <token> [timeout_sec]`
-Настраивает провайдер.
+Когда приходит оплаченный заказ на лоте, который ты привязал к AutoSteamPoints.
 
-Пример:
-```text
-/autosteampoints_http_set https://provider.example/api TOKEN 25
-```
+### Как он это делает с помощью команд
 
-##### `/autosteampoints_lots`
-Показывает список лотов.
+1. Подключается внешний поставщик:
+   ```text
+   /autosteampoints_http_set <base_url> <token> [timeout_sec]
+   ```
 
-##### `/autosteampoints_lots_add <lot_id> <points_per_unit>`
-Добавляет или обновляет лот.
+2. Привязывается лот:
+   ```text
+   /autosteampoints_lots_add <lot_id> <points_per_unit>
+   ```
 
-Пример:
-```text
-/autosteampoints_lots_add 123456 100
-```
+3. При необходимости настраивается срок ожидания:
+   ```text
+   /autosteampoints_sla <seconds>
+   ```
 
-##### `/autosteampoints_lots_del <lot_id>`
-Удаляет лот.
+4. Зависшие задачи можно повторно запустить:
+   ```text
+   /autosteampoints_replay
+   ```
 
-##### `/autosteampoints_sla <seconds>`
-Меняет SLA ожидания.
+### Самые важные команды для обычного пользователя
 
-##### `/autosteampoints_replay`
-Повторяет задачи в `WAITING_STOCK`.
+- `/autosteampoints_http_set`
+- `/autosteampoints_lots_add`
+- `/autosteampoints_lots`
+- `/autosteampoints_sla`
 
-#### Минимальный тест
-1. Выдать доступ к `autosteampoints`.
-2. Включить плагин.
-3. Сохранить provider.
-4. Привязать лот.
-5. Сделать тестовый заказ.
-6. Проверить `plugin_autosteampoints`.
+### Команды плагина
+
+#### `/autosteampoints_help`
+Показывает справку.
+
+#### `/autosteampoints_cfg`
+Показывает текущие настройки.
+
+#### `/autosteampoints_http_set <base_url> <token> [timeout_sec]`
+Настраивает поставщика.
+
+### Параметры
+- `base_url` — адрес поставщика;
+- `token` — токен доступа;
+- `timeout_sec` — время ожидания ответа.
 
 ---
 
-### 4.4 Steam Gifts Auto Lot (`steamgifts_autolot`)
+#### `/autosteampoints_lots`
+Показывает привязанные лоты.
 
-Назначение: синхронизация и автодоставка Steam Gift.
+---
 
-#### Команды
+#### `/autosteampoints_lots_add <lot_id> <points_per_unit>`
+Добавляет лот.
 
-##### `/steamgifts_help`
+### Что означает
+Ты говоришь:
+«Если покупают этот лот, нужно отправлять столько-то Steam Points за одну единицу».
+
+### Параметры
+- `lot_id` — ID лота FunPay;
+- `points_per_unit` — количество Steam Points за 1 единицу товара.
+
+### Где взять
+- `lot_id` — в FunPay;
+- `points_per_unit` — задаешь сам.
+
+---
+
+#### `/autosteampoints_lots_del <lot_id>`
+Удаляет лот.
+
+---
+
+#### `/autosteampoints_sla <seconds>`
+Меняет максимальное время ожидания выполнения.
+
+### Что означает
+Через сколько секунд система будет считать, что задача слишком долго висит.
+
+---
+
+#### `/autosteampoints_replay`
+Повторяет задачи, которые зависли из-за отсутствия стока.
+
+---
+
+## 5.4 Steam Gifts Auto Lot (`steamgifts_autolot`)
+
+### Что делает плагин простыми словами
+
+Этот плагин нужен для автоматической продажи **Steam Gifts / ключей / товаров провайдера**, которые берутся через внешний сервис.
+
+Он:
+- связывает лоты FunPay с товарами поставщика;
+- может учитывать регионы;
+- умеет применять наценку;
+- следит за актуальностью данных;
+- повторно запускает задачи, если временно не было наличия.
+
+### Когда он срабатывает
+
+- при заказе на привязанном лоте;
+- в фоне для синхронизации.
+
+### Как он это делает с помощью команд
+
+1. Подключается провайдер:
+   ```text
+   /steamgifts_http_set <base_url> <token> [timeout_sec]
+   ```
+
+2. Выбирается провайдер:
+   ```text
+   /steamgifts_provider http
+   ```
+
+3. Настраиваются общие правила:
+   ```text
+   /steamgifts_sync_interval <sec>
+   /steamgifts_markup_default <pct>
+   /steamgifts_round_step <step>
+   ```
+
+4. Привязывается лот:
+   ```text
+   /steamgifts_lots_add <lot_id> <ns_sku> [allowed_regions_csv] [markup_pct]
+   ```
+
+5. При необходимости повторяются отложенные задачи:
+   ```text
+   /steamgifts_replay
+   ```
+
+### Самые важные команды
+
+- `/steamgifts_http_set`
+- `/steamgifts_lots_add`
+- `/steamgifts_lots`
+- `/steamgifts_markup_default`
+
+### Команды плагина
+
+#### `/steamgifts_help`
 Справка.
 
-##### `/steamgifts_cfg`
-Показывает конфиг.
+#### `/steamgifts_cfg`
+Текущий конфиг.
 
-##### `/steamgifts_provider http`
-Задает тип провайдера.
+#### `/steamgifts_provider http`
+Выбирает провайдера.
 
-##### `/steamgifts_http_set <base_url> <token> [timeout_sec]`
-Настраивает HTTP provider.
+---
 
-##### `/steamgifts_http_clear`
-Очищает настройки provider.
+#### `/steamgifts_http_set <base_url> <token> [timeout_sec]`
+Настраивает внешний сервис.
 
-##### `/steamgifts_sync_interval <sec>`
-Интервал синхронизации.
+### Параметры
+- `base_url` — адрес сервиса;
+- `token` — токен;
+- `timeout_sec` — сколько ждать ответ.
 
-##### `/steamgifts_markup_default <pct>`
-Дефолтная наценка.
+---
 
-##### `/steamgifts_round_step <step>`
-Шаг округления цены.
+#### `/steamgifts_http_clear`
+Очищает настройки провайдера.
 
-##### `/steamgifts_lots`
-Показывает маппинги `lot_id -> sku`.
+---
 
-##### `/steamgifts_lots_add <lot_id> <ns_sku> [allowed_regions_csv] [markup_pct]`
-Добавляет или обновляет лот.
+#### `/steamgifts_sync_interval <sec>`
+Задает интервал синхронизации.
 
-Пример:
+### Что означает
+Как часто плагин будет обновлять данные у поставщика.
+
+---
+
+#### `/steamgifts_markup_default <pct>`
+Задает наценку по умолчанию.
+
+### Что означает
+На сколько процентов повышать цену относительно поставщика.
+
+---
+
+#### `/steamgifts_round_step <step>`
+Задает шаг округления цены.
+
+### Примеры
+- `1.00`
+- `5.00`
+
+---
+
+#### `/steamgifts_lots`
+Показывает список привязок лотов.
+
+---
+
+#### `/steamgifts_lots_add <lot_id> <ns_sku> [allowed_regions_csv] [markup_pct]`
+Привязывает лот FunPay к товару поставщика.
+
+### Параметры
+- `lot_id` — ID лота FunPay;
+- `ns_sku` — код товара у поставщика;
+- `allowed_regions_csv` — список стран/регионов через запятую;
+- `markup_pct` — индивидуальная наценка для этого лота.
+
+### Где взять
+- `lot_id` — в FunPay;
+- `ns_sku` — у внешнего поставщика;
+- `allowed_regions_csv` — задаешь сам, если нужно;
+- `markup_pct` — задаешь сам.
+
+### Пример
 ```text
 /steamgifts_lots_add 123456 GAME_SKU RU,KZ 10
 ```
 
-##### `/steamgifts_lots_del <lot_id>`
-Удаляет лот.
+---
 
-##### `/steamgifts_replay`
-Повторяет задачи в `WAITING_STOCK`.
+#### `/steamgifts_lots_del <lot_id>`
+Удаляет привязку лота.
 
 ---
 
-### 4.5 AutoRent Steam (`autorent_steam`)
+#### `/steamgifts_replay`
+Повторяет задачи из состояния ожидания.
 
-Назначение: автоматическая аренда Steam-аккаунтов.
+---
 
-#### Команды
+## 5.5 AutoRent Steam (`autorent_steam`)
 
-##### `/autorent_help`
-Справка.
+### Что делает плагин простыми словами
 
-##### `/autorent_cfg`
-Показывает конфиг.
+Этот плагин автоматизирует **аренду Steam-аккаунтов**.
 
-##### `/autorent_lots`
-Показывает маппинги лотов.
+Он:
+- хранит пул аккаунтов;
+- знает, какие аккаунты подходят для каких игр;
+- выдает подходящий аккаунт при заказе;
+- отслеживает, занята ли учетная запись;
+- может предупреждать перед окончанием аренды;
+- поддерживает ротацию паролей через внешний сервис.
 
-##### `/autorent_lots_add <lot_id> <hours> <game_key>`
-Добавляет лот аренды.
+### Когда он срабатывает
 
-Пример:
+Когда приходит заказ на привязанный лот аренды.
+
+### Как он это делает с помощью команд
+
+1. Ты описываешь, какие лоты у тебя аренда:
+   ```text
+   /autorent_lots_add <lot_id> <hours> <game_key>
+   ```
+
+2. Добавляешь аккаунты в пул:
+   ```text
+   /autorent_account_add <login> <password> <game_key1,game_key2,...>
+   ```
+
+3. При желании настраиваешь предупреждение:
+   ```text
+   /autorent_warn <seconds>
+   ```
+
+4. При желании подключаешь ротатор:
+   ```text
+   /autorent_rotator_http_set <base_url> <token>
+   ```
+
+### Самые важные команды
+
+- `/autorent_lots_add`
+- `/autorent_account_add`
+- `/autorent_accounts`
+- `/autorent_warn`
+
+### Команды плагина
+
+#### `/autorent_help`
+Показывает справку.
+
+#### `/autorent_cfg`
+Показывает текущие настройки.
+
+#### `/autorent_lots`
+Показывает список лотов аренды.
+
+---
+
+#### `/autorent_lots_add <lot_id> <hours> <game_key>`
+Добавляет или обновляет лот аренды.
+
+### Что означает
+Ты говоришь:
+«Этот лот означает аренду игры `game_key` на столько-то часов».
+
+### Параметры
+- `lot_id` — ID лота FunPay;
+- `hours` — длительность аренды;
+- `game_key` — внутренний ключ игры.
+
+### Где взять
+- `lot_id` — в FunPay;
+- `hours` — ставишь сам;
+- `game_key` — придумываешь сам и потом используешь в аккаунтах.
+
+### Пример
 ```text
 /autorent_lots_add 123456 24 cs2
 ```
 
-##### `/autorent_lots_del <lot_id>`
-Удаляет лот.
+---
 
-##### `/autorent_warn <seconds>`
+#### `/autorent_lots_del <lot_id>`
+Удаляет лот аренды.
+
+---
+
+#### `/autorent_warn <seconds>`
 Настраивает предупреждение перед окончанием аренды.
 
-##### `/autorent_default_duration <seconds>`
-Длительность аренды по умолчанию.
+### Что означает
+За сколько секунд до конца аренды отправлять предупреждение.
 
-#### Управление аккаунтами
+---
 
-##### `/autorent_account_add <login> <password> <game_key1,game_key2,...>`
+#### `/autorent_default_duration <seconds>`
+Задает срок аренды по умолчанию.
+
+---
+
+#### `/autorent_account_add <login> <password> <game_key1,game_key2,...>`
 Добавляет аккаунт в пул.
 
-Пример:
+### Что означает
+Ты говоришь боту:
+«Вот логин и пароль аккаунта, его можно выдавать для таких-то игр».
+
+### Параметры
+- `login` — логин Steam-аккаунта;
+- `password` — пароль;
+- `game_key1,game_key2,...` — список игр, которые есть на этом аккаунте.
+
+### Где взять
+Все эти данные — из твоего собственного пула аккаунтов.
+
+### Пример
 ```text
 /autorent_account_add mylogin mypassword cs2,dota2
 ```
 
-##### `/autorent_accounts`
-Показывает аккаунты.
+---
 
-##### `/autorent_account_disable <id>`
-Отключает аккаунт.
-
-##### `/autorent_account_enable <id>`
-Включает аккаунт.
-
-##### `/autorent_account_del <id>`
-Удаляет аккаунт.
-
-#### Ротация
-
-##### `/autorent_rotator_off`
-Отключает rotator.
-
-##### `/autorent_rotator_http_set <base_url> <token>`
-Подключает HTTP rotator.
+#### `/autorent_accounts`
+Показывает список аккаунтов:
+- включен/выключен;
+- свободен/занят;
+- какие игры на нем есть.
 
 ---
 
-### 4.6 AutoBalance (`autobalance`)
+#### `/autorent_account_disable <id>`
+Выключает аккаунт.
 
-Назначение: следит за балансами и управляет лотами.
+#### `/autorent_account_enable <id>`
+Включает аккаунт обратно.
 
-#### Команды
+#### `/autorent_account_del <id>`
+Удаляет аккаунт.
 
-##### `/autobalance_help`
+### Где взять `id`
+Его показывает команда `/autorent_accounts`.
+
+---
+
+#### `/autorent_rotator_off`
+Отключает ротацию паролей.
+
+#### `/autorent_rotator_http_set <base_url> <token>`
+Подключает внешний сервис ротации.
+
+---
+
+## 5.6 AutoBalance (`autobalance`)
+
+### Что делает плагин простыми словами
+
+Этот плагин следит за остатками и балансами.
+
+Он:
+- запрашивает баланс у провайдеров;
+- сравнивает его с порогами;
+- может понимать, что товара/кредитов мало;
+- связанным с этим ресурсом лотам можно менять состояние;
+- умеет работать как с реальным HTTP-провайдером, так и с безопасным `mock`.
+
+### Когда он срабатывает
+
+Работает в фоне по таймеру.
+
+### Как он это делает с помощью команд
+
+1. Добавляется провайдер баланса:
+   ```text
+   /autobalance_provider_http_add ...
+   ```
+   или
+   ```text
+   /autobalance_provider_mock_add ...
+   ```
+
+2. Создается ресурс:
+   ```text
+   /autobalance_resource_set <resource_key> <provider_id> <low> <high> [unit]
+   ```
+
+3. К ресурсу привязываются лоты:
+   ```text
+   /autobalance_resource_lots_add <resource_key> <lot_id1> [lot_id2 ...]
+   ```
+
+4. Настраивается интервал проверки:
+   ```text
+   /autobalance_poll <seconds>
+   ```
+
+5. Статус проверяется:
+   ```text
+   /autobalance_status
+   ```
+
+### Самые важные команды
+
+- `/autobalance_provider_mock_add`
+- `/autobalance_provider_http_add`
+- `/autobalance_resource_set`
+- `/autobalance_resource_lots_add`
+- `/autobalance_status`
+
+### Команды плагина
+
+#### `/autobalance_help`
 Справка.
 
-##### `/autobalance_cfg`
+#### `/autobalance_cfg`
 Показывает конфиг.
 
-##### `/autobalance_status`
-Показывает статусы балансов.
+#### `/autobalance_status`
+Показывает последние балансы и статусы.
 
-##### `/autobalance_poll <seconds>`
-Интервал опроса.
+---
 
-##### `/autobalance_provider_http_add <provider_id> <name> <url> <token> [json_path] [timeout_sec]`
-Добавляет HTTP provider.
+#### `/autobalance_poll <seconds>`
+Задает интервал опроса.
 
-##### `/autobalance_provider_mock_add <provider_id> <name> <balance>`
-Добавляет mock provider.
+### Что означает
+Как часто проверять баланс.
 
-Пример:
+---
+
+#### `/autobalance_provider_http_add <provider_id> <name> <url> <token> [json_path] [timeout_sec]`
+Добавляет реальный HTTP-провайдер.
+
+### Параметры
+- `provider_id` — внутреннее имя провайдера, придумываешь сам.
+- `name` — понятное название, например `Stars`.
+- `url` — адрес сервиса, который отдает баланс.
+- `token` — токен доступа.
+- `json_path` — где в ответе искать баланс.
+- `timeout_sec` — время ожидания ответа.
+
+### Пример
+```text
+/autobalance_provider_http_add stars Stars http://autostars_provider_http:8080/balance TOKEN balance 20
+```
+
+---
+
+#### `/autobalance_provider_mock_add <provider_id> <name> <balance>`
+Добавляет тестовый mock-провайдер.
+
+### Что означает
+Удобный безопасный режим для теста без реального API.
+
+### Пример
 ```text
 /autobalance_provider_mock_add stars Stars 1000
 ```
 
-##### `/autobalance_provider_del <provider_id>`
-Удаляет provider.
+---
 
-##### `/autobalance_resource_set <resource_key> <provider_id> <low> <high> [unit]`
-Создает ресурс с порогами.
+#### `/autobalance_provider_del <provider_id>`
+Удаляет провайдера.
 
-Пример:
+---
+
+#### `/autobalance_resource_set <resource_key> <provider_id> <low> <high> [unit]`
+Создает ресурс и пороги.
+
+### Что означает простыми словами
+Ты говоришь:
+«Вот за каким остатком следить, когда считать его низким, и когда снова считать нормальным».
+
+### Параметры
+- `resource_key` — внутреннее имя ресурса.
+- `provider_id` — из какого провайдера брать баланс.
+- `low` — нижний порог.
+- `high` — верхний порог.
+- `unit` — единица измерения.
+
+### Где взять
+- `resource_key` — придумать самому;
+- `provider_id` — то имя, которое ты сам задал провайдеру;
+- `low/high` — свои пороги;
+- `unit` — например `Stars`.
+
+### Пример
 ```text
 /autobalance_resource_set stars stars 500 700 Stars
 ```
 
-##### `/autobalance_resource_del <resource_key>`
+---
+
+#### `/autobalance_resource_del <resource_key>`
 Удаляет ресурс.
 
-##### `/autobalance_resource_lots_add <resource_key> <lot_id1> [lot_id2 ...]`
+---
+
+#### `/autobalance_resource_lots_add <resource_key> <lot_id1> [lot_id2 ...]`
 Привязывает лоты к ресурсу.
 
-##### `/autobalance_resource_lots_del <resource_key> <lot_id1> [lot_id2 ...]`
+### Что означает
+Если ресурс связан с этими лотами, плагин будет учитывать их при автоматике.
+
+### Пример
+```text
+/autobalance_resource_lots_add stars 123456 987654
+```
+
+---
+
+#### `/autobalance_resource_lots_del <resource_key> <lot_id1> [lot_id2 ...]`
 Отвязывает лоты.
 
-#### Минимальный безопасный тест
+### Безопасный тест для новичка
 ```text
 /autobalance_provider_mock_add stars Stars 1000
 /autobalance_resource_set stars stars 500 700 Stars
@@ -426,163 +1283,355 @@
 
 ---
 
-### 4.7 AutoLotDeactivator (`autolotdeactivator`)
+## 5.7 AutoLotDeactivator (`autolotdeactivator`)
 
-Назначение: переключение лотов и менеджер удаления.
+### Что делает плагин простыми словами
 
-#### Команды
+Этот плагин помогает автоматически включать и выключать лоты или, как минимум, сообщать о проблемах с ними.
 
-##### `/autolot_help`
+Он полезен, когда:
+- товар закончился;
+- нужно временно скрыть лот;
+- хочешь не забывать про отключение проблемных позиций.
+
+### Когда он срабатывает
+
+Работает по внутренней логике и связан с изменением состояния лотов.
+
+### Как он это делает с помощью команд
+
+1. Выбирается режим:
+   ```text
+   /autolot_mode auto
+   ```
+   или
+   ```text
+   /autolot_mode notify
+   ```
+
+2. Можно исключить конкретные лоты из автоматики:
+   ```text
+   /autolot_lot_autooff <lot_id>
+   ```
+
+3. Можно вернуть их обратно:
+   ```text
+   /autolot_lot_autoon <lot_id>
+   ```
+
+4. Для ручной работы есть менеджер:
+   ```text
+   /dlm
+   ```
+
+### Самые важные команды
+
+- `/autolot_mode`
+- `/autolot_lot_autooff`
+- `/autolot_lot_autoon`
+- `/autolot_lot_list`
+- `/dlm`
+
+### Команды плагина
+
+#### `/autolot_help`
 Справка.
 
-##### `/autolot_cfg`
+#### `/autolot_cfg`
 Показывает конфиг.
 
-##### `/autolot_mode auto|notify`
-Выбирает режим:
-- `auto`
-- `notify`
+#### `/autolot_mode auto|notify`
+Выбирает режим.
 
-##### `/autolot_lot_autooff <lot_id>`
-Исключает лот из авто-переключения.
+### Значения
+- `auto` — плагин сам выполняет действия;
+- `notify` — только сообщает, но ничего не меняет автоматически.
 
-##### `/autolot_lot_autoon <lot_id>`
-Возвращает авто-переключение.
+---
 
-##### `/autolot_lot_list`
+#### `/autolot_lot_autooff <lot_id>`
+Запрещает автоматическую обработку конкретного лота.
+
+---
+
+#### `/autolot_lot_autoon <lot_id>`
+Возвращает лот в автоматическую обработку.
+
+---
+
+#### `/autolot_lot_list`
 Показывает список исключений.
 
-##### `/dlm`
+---
+
+#### `/dlm`
 Открывает Delete Lots Manager.
 
-##### `/lots_manager`
+#### `/lots_manager`
 То же самое.
 
 ---
 
-### 4.8 AutoLog (`autolog`)
+## 5.8 AutoLog (`autolog`)
 
-Назначение: логирование и статистика.
+### Что делает плагин простыми словами
 
-#### Команды
+Этот плагин собирает статистику и помогает выгружать отчеты по сделкам.
 
-##### `/autolog_stats`
+Он удобен, если ты хочешь:
+- видеть статистику за день, неделю, месяц;
+- выгружать данные для учета;
+- проверять общую активность продаж.
+
+### Когда он срабатывает
+
+Он записывает события по мере работы системы, а команды дают отчет по уже собранным данным.
+
+### Как он это делает с помощью команд
+
+Основной интерфейс очень простой:
+
+- посмотреть статистику:
+  ```text
+  /autolog_stats
+  /autolog_stats week
+  /autolog_stats month
+  ```
+
+- сделать экспорт:
+  ```text
+  /autolog_export
+  /autolog_export csv week
+  /autolog_export xlsx month
+  ```
+
+### Команды плагина
+
+#### `/autolog_stats`
 Статистика за день.
 
-##### `/autolog_stats week`
+#### `/autolog_stats week`
 Статистика за неделю.
 
-##### `/autolog_stats month`
+#### `/autolog_stats month`
 Статистика за месяц.
 
-##### `/autolog_export`
+#### `/autolog_export`
 Экспорт по умолчанию.
 
-##### `/autolog_export csv week`
+#### `/autolog_export csv week`
 Экспорт CSV за неделю.
 
-##### `/autolog_export xlsx month`
+#### `/autolog_export xlsx month`
 Экспорт XLSX за месяц.
+
+### Для кого полезно
+Для продавца, который хочет видеть цифры без ручного сбора.
 
 ---
 
-### 4.9 AutoPriceMonitor (`autopricemonitor`)
+## 5.9 AutoPriceMonitor (`autopricemonitor`)
 
-Назначение: мониторинг цен конкурентов.
+### Что делает плагин простыми словами
 
-#### Команды
+Этот плагин следит за ценами конкурентов на FunPay.
 
-##### `/apm_help`
+Он может:
+- мониторить нужную категорию или URL;
+- сравнивать чужие цены с твоими;
+- работать в безопасном режиме `notify_only`;
+- хранить список целей наблюдения;
+- в более активном режиме помогать с автоизменением цены.
+
+### Когда он срабатывает
+
+Работает в фоне по таймеру.
+
+### Как он это делает с помощью команд
+
+1. Создается цель наблюдения:
+   ```text
+   /apm_add_url <name> <url> <my_lot_id> <my_price> [strategy]
+   ```
+   или
+   ```text
+   /apm_add_category <name> <chips|lots> <category_id> <my_lot_id> <my_price> [strategy]
+   ```
+
+2. Проверяется список целей:
+   ```text
+   /apm_status
+   ```
+
+3. После создания цели можно менять ее параметры:
+   ```text
+   /apm_set <target_id> <field> <value>
+   ```
+
+4. Можно включать/выключать цель:
+   ```text
+   /apm_enable <target_id>
+   /apm_disable <target_id>
+   ```
+
+5. Можно исключать продавцов:
+   ```text
+   /apm_ignore_add <target_id> <seller1> [seller2 ...]
+   ```
+
+### Самые важные команды
+
+- `/apm_add_url`
+- `/apm_add_category`
+- `/apm_status`
+- `/apm_set`
+- `/apm_enable`
+- `/apm_disable`
+
+### Команды плагина
+
+#### `/apm_help`
 Справка.
 
-##### `/apm_cfg`
+#### `/apm_cfg`
 Текущий конфиг.
 
-##### `/apm_poll <seconds>`
-Интервал опроса.
+#### `/apm_poll <seconds>`
+Интервал проверки цен.
 
-##### `/apm_add_url <name> <url> <my_lot_id> <my_price> [strategy]`
+---
+
+#### `/apm_add_url <name> <url> <my_lot_id> <my_price> [strategy]`
 Добавляет цель по URL.
 
-Пример:
+### Параметры
+- `name` — название цели, придумываешь сам.
+- `url` — ссылка на страницу, которую надо мониторить.
+- `my_lot_id` — ID твоего лота.
+- `my_price` — твоя текущая цена.
+- `strategy` — стратегия, например `notify_only`.
+
+### Где взять
+- `name` — придумать самому;
+- `url` — ссылка с FunPay;
+- `my_lot_id` — ID своего лота;
+- `my_price` — твоя цена;
+- `strategy` — выбрать сам.
+
+### Пример
 ```text
 /apm_add_url Robux100 https://funpay.com/chips/123/ 999999 100 notify_only
 ```
 
-##### `/apm_add_category <name> <chips|lots> <category_id> <my_lot_id> <my_price> [strategy]`
+---
+
+#### `/apm_add_category <name> <chips|lots> <category_id> <my_lot_id> <my_price> [strategy]`
 Добавляет цель по категории.
 
-Пример:
+### Параметры
+- `name` — любое удобное название;
+- `chips|lots` — тип раздела;
+- `category_id` — ID категории на FunPay;
+- `my_lot_id` — ID твоего лота;
+- `my_price` — твоя цена;
+- `strategy` — стратегия работы.
+
+### Пример
 ```text
 /apm_add_category Robux100 chips 123 999999 100 notify_only
 ```
 
-##### `/apm_status`
-Показывает список целей.
+---
 
-##### `/apm_status <target_id>`
-Подробный статус по цели.
+#### `/apm_status`
+Показывает список целей и их `target_id`.
 
-##### `/apm_enable <target_id>`
+#### `/apm_status <target_id>`
+Показывает подробности по одной цели.
+
+---
+
+#### `/apm_enable <target_id>`
 Включает цель.
 
-##### `/apm_disable <target_id>`
+#### `/apm_disable <target_id>`
 Выключает цель.
 
-##### `/apm_del <target_id>`
+#### `/apm_del <target_id>`
 Удаляет цель.
 
-##### `/apm_set <target_id> <field> <value>`
+---
+
+#### `/apm_set <target_id> <field> <value>`
 Меняет параметр цели.
 
-Поддерживаемые поля:
-- `name`
-- `url`
-- `my_lot_id`
-- `my_price`
-- `strategy`
-- `undercut_step`
-- `floor_price`
-- `max_down_pct`
-- `max_changes_per_day`
-- `min_minutes_between_changes`
-- `min_reviews`
+### Что означает
+Позволяет менять настройки уже после создания цели.
 
-Примеры:
+### Примеры
 ```text
 /apm_set 1a2b3c strategy aggressive
 /apm_set 1a2b3c floor_price 95
 /apm_set 1a2b3c undercut_step 1
 ```
 
-##### `/apm_keywords <target_id> ...`
-Задает ключевые слова.
+---
 
-##### `/apm_ignore_add <target_id> <seller1> [seller2 ...]`
-Добавляет игнорируемых продавцов.
-
-##### `/apm_ignore_del <target_id> <seller1> [seller2 ...]`
-Удаляет из ignore list.
+#### `/apm_keywords <target_id> ...`
+Добавляет ключевые слова для фильтрации.
 
 ---
 
-### 4.10 AutoRefund (`autorefund`)
+#### `/apm_ignore_add <target_id> <seller1> [seller2 ...]`
+Добавляет продавцов в игнор-лист.
 
-Назначение: автоматическая реакция на споры и возвраты.
+#### `/apm_ignore_del <target_id> <seller1> [seller2 ...]`
+Удаляет продавцов из игнор-листа.
 
-Важно:
-- отдельного набора Telegram-команд для конфигурации сейчас нет;
-- плагин настраивается через внутренний конфиг;
-- тестировать лучше по логам.
+### Безопасный тест для новичка
+Лучше начинать со стратегии `notify_only`, чтобы плагин только сообщал, но не менял цены автоматически.
 
 ---
 
-## 5. Как тестировать бота и плагины
+## 5.10 AutoRefund (`autorefund`)
 
-### Вариант A — быстрый smoke test
-Подходит для проверки, что бот живой.
+### Что делает плагин простыми словами
 
-Действия тестера:
+Этот плагин связан с автоматической обработкой возвратов и спорных ситуаций.
+
+Он может использовать внутренние правила и логику, чтобы:
+- замечать ситуации с возвратом;
+- принимать решение по шаблонам;
+- использовать данные о доставке и истории сделки.
+
+### Когда он срабатывает
+
+Когда в системе появляются события, связанные с заказом, перепиской и спорной логикой.
+
+### Как он это делает с помощью команд
+
+В отличие от других плагинов, у него сейчас **нет отдельного большого набора пользовательских Telegram-команд для настройки**.
+
+То есть:
+- доступ к плагину выдать можно;
+- включить в `/plugins` можно;
+- сам плагин работать может;
+- но настраивается он в основном через внутренний конфиг и серверную логику.
+
+### Что важно знать обычному пользователю
+Если ты не разработчик, этот плагин лучше тестировать:
+- на отдельном тестовом пользователе;
+- на тестовых сделках;
+- с обязательной проверкой логов.
+
+---
+
+# 6. Как тестировать бота и плагины
+
+## Вариант A — быстрый тест, что бот живой
+
+Пользователь отправляет:
+
 ```text
 /start
 /plugins
@@ -590,18 +1639,194 @@
 
 Проверяется:
 - бот отвечает;
-- открывается меню;
-- видны плагины.
+- меню открывается;
+- список плагинов отображается.
 
 ---
 
-### Вариант B — нормальный тест с FunPay
+## Вариант B — нормальный пользовательский тест с FunPay
+
+Пользователь делает:
+
+```text
+/start
+/accountset <golden_key>
+/accountcheck
+/listenon
+```
+
+После этого администратор выдает доступ к нужному плагину через `/grant`.
+
+Дальше пользователь:
+1. открывает `/plugins`;
+2. включает нужный плагин;
+3. вводит команды настройки;
+4. делает тестовый заказ.
+
+---
+
+## Вариант C — безопасный тест без реальных действий
+
+Если в `.env` выставить:
+
+```text
+DRY_RUN=1
+```
+
+то логика будет выполняться, но реальные действия в FunPay отправляться не будут.
+
+---
+
+# 7. Как выдавать доступ тестерам без подписки
+
+Основной способ — команда `/grant`.
+
+## Пример выдачи доступа ко всем рабочим плагинам
+
+Если у тестера Telegram ID `123456789`, можно выдать доступ так:
+
+```text
+/grant 123456789 autostars 365
+/grant 123456789 autobalance 365
+/grant 123456789 autolotdeactivator 365
+/grant 123456789 autosteampoints 365
+/grant 123456789 autorent_steam 365
+/grant 123456789 fragment_stars_buyer 365
+/grant 123456789 steamgifts_autolot 365
+/grant 123456789 autorefund 365
+/grant 123456789 autolog 365
+/grant 123456789 autopricemonitor 365
+```
+
+После этого тестер должен:
+1. открыть `/plugins`;
+2. включить нужные плагины вручную.
+
+---
+
+# 8. Короткие сценарии тестирования по плагинам
+
+## AutoStars
+1. Выдать доступ.
+2. Включить плагин.
+3. Настроить источник отправки.
+4. Добавить лот.
+5. Сделать заказ.
+6. Проверить, попросил ли бот username и выполнил ли доставку.
+
+## Fragment Stars Buyer
+1. Выдать доступ.
+2. Включить плагин.
+3. Выставить `mock`.
+4. Задать тестовую цену и объем.
+5. Включить стратегию.
+6. Проверить статус.
+
+## AutoSteamPoints
+1. Выдать доступ.
+2. Включить плагин.
+3. Настроить HTTP-поставщика.
+4. Добавить лот.
+5. Сделать тестовый заказ.
+
+## Steam Gifts Auto Lot
+1. Выдать доступ.
+2. Включить.
+3. Настроить провайдера.
+4. Привязать лот к `ns_sku`.
+5. Сделать тестовый заказ.
+
+## AutoRent Steam
+1. Выдать доступ.
+2. Включить.
+3. Добавить лот аренды.
+4. Добавить аккаунт в пул.
+5. Сделать тестовый заказ.
+
+## AutoBalance
+1. Выдать доступ.
+2. Включить.
+3. Добавить `mock`-провайдер.
+4. Создать ресурс.
+5. Привязать к нему лоты.
+6. Проверить статус.
+
+## AutoLotDeactivator
+1. Выдать доступ.
+2. Включить.
+3. Установить режим `notify`.
+4. Проверить `/autolot_cfg`.
+5. Открыть `/dlm`.
+
+## AutoLog
+1. Выдать доступ.
+2. Включить.
+3. Сделать несколько действий/заказов.
+4. Посмотреть статистику и экспорт.
+
+## AutoPriceMonitor
+1. Выдать доступ.
+2. Включить.
+3. Добавить цель по URL или категории.
+4. Проверить `/apm_status`.
+5. Оставить стратегию `notify_only` для первого теста.
+
+## AutoRefund
+1. Выдать доступ.
+2. Включить.
+3. Тестировать только на безопасных сценариях.
+4. Смотреть логи.
+
+---
+
+# 9. Где смотреть логи
+
+Из папки `infra`:
+
+```powershell
+docker compose logs -f control_bot
+docker compose logs -f funpay_connector
+docker compose logs -f plugin_router
+docker compose logs -f outbox_dispatcher
+docker compose logs -f plugin_autostars
+docker compose logs -f plugin_autosteampoints
+docker compose logs -f plugin_steamgifts_autolot
+docker compose logs -f plugin_autorent_steam
+docker compose logs -f plugin_fragment_stars_buyer
+docker compose logs -f plugin_autobalance
+docker compose logs -f plugin_autolotdeactivator
+docker compose logs -f plugin_autolog
+docker compose logs -f plugin_autopricemonitor
+docker compose logs -f plugin_autorefund
+```
+
+---
+
+# 10. Что лучше сделать перед реальными тестами
+
+1. Выдавать тестерам только рабочие плагины.
+2. Делать отдельный тестовый лот под каждый сценарий.
+3. Для фоновых плагинов сначала использовать безопасные режимы:
+   - `fragment_stars_buyer` — `mock`;
+   - `autobalance` — `mock provider`;
+   - `autopricemonitor` — `notify_only`.
+4. Не запускать первые тесты сразу на боевых дорогих лотах.
+5. После выдачи доступа всегда напоминать тестеру зайти в `/plugins` и включить плагин.
+
+---
+
+# 11. Самый короткий сценарий для тестера
+
+## Что делает администратор
+1. Выдает доступ через `/grant`.
+2. Пишет тестеру, какой плагин включить.
+
+## Что делает тестер
 1. `/start`
 2. `/accountset <golden_key>`
 3. `/accountcheck`
 4. `/listenon`
-5. получить от администратора доступ к плагину через `/grant`
-6. открыть `/plugins`
-7. включить нужный плагин
-8. настроить его командами
-9. сделать тестовый заказ
+5. `/plugins`
+6. включает нужный плагин
+7. вводит команды настройки
+8. делает тестовый заказ
