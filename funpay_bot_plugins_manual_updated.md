@@ -2,7 +2,7 @@
 
 ## Для кого этот документ
 
-Эта инструкция написана для обычного пользователя бота, а не для разработчика.
+Эта инструкция написана для обычного пользователя бота.
 
 Она поможет:
 
@@ -16,47 +16,9 @@
 
 ---
 
-# 1. Что изменилось по сравнению со старой инструкцией
+# 1. Работа бота
 
-В проекте изменился сам сценарий работы с ботом.
-
-Теперь у бота есть не только текстовые команды, но и полноценный кнопочный интерфейс:
-
-- главное меню;
-- отдельный раздел аккаунта FunPay;
-- отдельный каталог плагинов;
-- карточка каждого плагина;
-- экран настроек плагина;
-- формы ввода, где бот просит данные отдельным сообщением;
-- подтверждение сохранения с кнопками:
-  - **«🏠 Меню»**
-  - **«🧩 Плагины»**
-  - **«⬅️ К настройкам»**
-
-Также появились короткие команды-синонимы:
-
-- `/menu`
-- `/connect`
-- `/check`
-- `/on`
-- `/off`
-
-И ещё одно важное изменение:
-
-- в текущей версии основной упор сделан на **кнопочный интерфейс**;
-- многие настройки теперь удобнее делать **не вручную длинной командой**, а через кнопки в карточке плагина;
-- командный режим остался и продолжает работать.
-
-Важно: в текущем control bot больше **нет основной пользовательской команды `/help`** как главной точки входа. Вместо неё используй:
-
-- `/start`
-- `/menu`
-
----
-
-# 2. Как теперь устроена работа бота
-
-У бота по-прежнему две части:
+У бота две части:
 
 1. **Telegram-бот** — через него ты управляешь аккаунтом, подписками и настройками.
 2. **Фоновые сервисы** — они слушают события FunPay и выполняют автоматические действия.
@@ -64,14 +26,14 @@
 Общая логика теперь такая:
 
 1. Ты открываешь бота командой `/start`.
-2. Подключаешь FunPay-аккаунт через кнопку **«🔌 Аккаунт FunPay»** или команду `/connect`.
+2. Подключаешь FunPay-аккаунт через кнопку **«🔌 Аккаунт FunPay»**.
 3. Отправляешь `golden_key`.
 4. Проверяешь подключение.
 5. Включаешь слушатель.
 6. Открываешь раздел **«🧩 Плагины»**.
 7. Получаешь доступ к плагину:
    - либо покупаешь его внутри Telegram;
-   - либо администратор выдаёт доступ через `/grant`.
+   - либо администратор выдаёт доступ.
 8. После получения доступа **обязательно включаешь плагин** в его карточке.
 9. При необходимости заходишь в **«⚙️ Настроить»** и заполняешь параметры.
 10. После этого плагин начинает работать:
@@ -81,25 +43,16 @@
 
 ---
 
-# 3. Самое важное правило
+# 2. Самое важное правило
 
 Плагин начнёт работать только если одновременно выполнены **оба** условия:
 
 - у пользователя есть **доступ** к плагину;
 - сам плагин **включён** в карточке плагина.
 
-То есть:
-
-- доступ есть, но плагин выключен — он не работает;
-- плагин включён, но доступа нет — он тоже не работает.
-
-Это правило осталось таким же, как и в старой инструкции.
-
 ---
 
-# 4. Быстрый старт для нового пользователя
-
-## Вариант через кнопки
+# 3. Быстрый старт для нового пользователя
 
 1. Отправь:
 ```text
@@ -139,7 +92,7 @@
 
 9. Получи доступ:
 - через кнопку **«💳 Купить 30 дней»**, если платежи настроены;
-- либо попроси администратора выдать доступ через `/grant`.
+- либо попроси администратора выдать доступ.
 
 10. После выдачи доступа нажми:
 ```text
@@ -155,32 +108,13 @@
 
 ---
 
-## Вариант через команды
-
-```text
-/start
-/connect
-```
-
-После этого бот попросит отправить `golden_key`.
-
-Дальше:
-
-```text
-/check
-/on
-/plugins
-```
-
----
-
-# 5. Главное меню и что в нём находится
+# 4. Главное меню и что в нём находится
 
 После `/start` бот показывает главное меню.
 
 В нём есть два главных раздела:
 
-## 5.1. `🔌 Аккаунт FunPay`
+## 4.1. `🔌 Аккаунт FunPay`
 
 Здесь находится всё, что связано с подключением аккаунта:
 
@@ -189,7 +123,7 @@
 - включение и выключение слушателя;
 - просмотр статуса аккаунта.
 
-## 5.2. `🧩 Плагины`
+## 4.2. `🧩 Плагины`
 
 Здесь находится каталог плагинов:
 
@@ -202,7 +136,7 @@
 
 ---
 
-# 6. Базовые команды бота
+# 5. Базовые команды бота
 
 Ниже — актуальные основные команды control bot.
 
@@ -211,15 +145,6 @@
 
 ## `/menu`
 То же самое, что и `/start`: открывает меню.
-
-## `/accountset <golden_key> [user_agent]`
-Сохраняет FunPay-аккаунт сразу командой.
-
-### Пример
-```text
-/accountset abcdef123456
-/accountset abcdef123456 Mozilla/5.0
-```
 
 ## `/connect`
 Удобная короткая команда для подключения аккаунта.
@@ -250,44 +175,7 @@
 ## `/plugins`
 Открывает каталог плагинов.
 
-## `/grant <tg_user_id> <plugin> <days>`
-Админ-команда для выдачи доступа к плагину.
-
-### Пример
-```text
-/grant 123456789 autostars 30
-```
-
-Важно: команду может использовать только администратор.
-
 ---
-
-# 7. Как подключить FunPay-аккаунт
-
-## Через кнопки
-
-1. `/start`
-2. `🔌 Аккаунт FunPay`
-3. `🔐 Подключить / сменить ключ`
-4. Отправить `golden_key`
-5. `🔎 Проверить аккаунт`
-6. `✅ Включить слушателя`
-
-## Через команду
-
-```text
-/accountset <golden_key> [user_agent]
-/accountcheck
-/listenon
-```
-
-или коротко:
-
-```text
-/connect
-/check
-/on
-```
 
 ## Что важно знать про `golden_key`
 
@@ -297,7 +185,7 @@
 
 ---
 
-# 8. Как теперь устроен доступ к плагинам
+# 6. Как теперь устроен доступ к плагинам
 
 В карточке плагина теперь есть отдельная логика доступа.
 
@@ -310,13 +198,6 @@
 
 После успешной оплаты бот автоматически выдаёт доступ к плагину на 30 дней.
 
-## Если платежи не настроены
-Пользователь купить доступ не сможет, тогда доступ выдаёт администратор:
-
-```text
-/grant <tg_user_id> <plugin> <days>
-```
-
 ## После выдачи доступа
 Нужно зайти в карточку плагина и вручную нажать:
 
@@ -326,11 +207,7 @@
 
 ---
 
-# 9. Как выглядит настройка плагина теперь
-
-У плагинов с пользовательским UI настройка стала пошаговой.
-
-Сценарий такой:
+# 7. Как выглядит настройка плагина теперь
 
 1. Открываешь плагин.
 2. Нажимаешь **«⚙️ Настроить»**.
@@ -354,15 +231,12 @@
    - **«🧩 Плагины»**
    - **«⬅️ К настройкам»**
 
-Это как раз то поведение, которого не хватало старой инструкции.
-
 ---
 
-# 10. Какие плагины есть в проекте сейчас
+# 8. Какие плагины есть в проекте сейчас
 
-Каталог плагинов в текущей версии стал шире.
 
-## 10.1. Плагины с полноценной пользовательской настройкой
+## 8.1. Плагины с полноценной пользовательской настройкой
 
 Для них есть карточка и экран **«⚙️ Настроить»**:
 
@@ -376,11 +250,11 @@
 - `autopricemonitor`
 - `autolog`
 
-## 10.2. Плагины с частичной настройкой
+## 8.2. Плагины с частичной настройкой
 
 - `autorefund` — показывается в каталоге, включается и выключается, но детальная настройка в текущей сборке в основном серверная.
 
-## 10.3. Дополнительные встроенные модули из каталога
+## 8.3. Дополнительные встроенные модули из каталога
 
 Они есть в списке плагинов, их можно выдавать и включать, но отдельного полноценного пользовательского экрана настройки для них сейчас нет:
 
@@ -401,7 +275,7 @@
 
 ---
 
-# 11. Часто используемые значения в настройках
+# 9. Часто используемые значения в настройках
 
 ## `lot_id`
 ID лота FunPay.
@@ -478,7 +352,7 @@ ID аккаунта в AutoRent Steam.
 
 ---
 
-# 12. Подробно по основным плагинам
+# 10. Подробно по основным плагинам
 
 ---
 
@@ -537,19 +411,6 @@ ID аккаунта в AutoRent Steam.
 #### `✅ Доставка`
 Меняет текст после успешной выдачи.
 
-### Эквивалентные команды
-
-```text
-/autostars_lots
-/autostars_addlot <lot_id> <stars_per_unit> [source_id]
-/autostars_dellot <lot_id>
-/autostars_sources
-/autostars_source_http_add <source_id> <base_url> <token> [daily_limit_stars] [max_stars_per_tx] [timeout_sec] [min_balance_alert]
-/autostars_source_del <source_id>
-/autostars_request_text <текст>
-/autostars_delivered_text <текст>
-```
-
 ### Минимальный тест
 1. Выдать доступ к `autostars`.
 2. Включить плагин.
@@ -560,7 +421,7 @@ ID аккаунта в AutoRent Steam.
 
 ---
 
-## 12.2. AutoBalance (`autobalance`)
+## 10.2. AutoBalance (`autobalance`)
 
 ### Что делает
 Следит за балансами и остатками у провайдеров и сопоставляет их с порогами.
@@ -612,20 +473,6 @@ ID аккаунта в AutoRent Steam.
 1. `resource_key`
 2. список `lot_id`
 
-### Эквивалентные команды
-
-```text
-/autobalance_status
-/autobalance_poll <seconds>
-/autobalance_provider_http_add <provider_id> <name> <url> <token> [json_path] [timeout_sec]
-/autobalance_provider_mock_add <provider_id> <name> <balance>
-/autobalance_provider_del <provider_id>
-/autobalance_resource_set <resource_key> <provider_id> <low> <high> [unit]
-/autobalance_resource_del <resource_key>
-/autobalance_resource_lots_add <resource_key> <lot_id1> [lot_id2 ...]
-/autobalance_resource_lots_del <resource_key> <lot_id1> [lot_id2 ...]
-```
-
 ### Безопасный тест
 ```text
 /autobalance_provider_mock_add stars Stars 1000
@@ -636,7 +483,7 @@ ID аккаунта в AutoRent Steam.
 
 ---
 
-## 12.3. AutoLotDeactivator (`autolotdeactivator`)
+## 10.3. AutoLotDeactivator (`autolotdeactivator`)
 
 ### Что делает
 Управляет автоматическим отключением и включением лотов по внутренним сигналам.
@@ -665,22 +512,9 @@ ID аккаунта в AutoRent Steam.
 - режим `auto` или `notify`;
 - список исключённых лотов.
 
-### Эквивалентные команды
-
-```text
-/autolot_cfg
-/autolot_mode auto
-/autolot_mode notify
-/autolot_lot_autooff <lot_id>
-/autolot_lot_autoon <lot_id>
-/autolot_lot_list
-/dlm
-/lots_manager
-```
-
 ---
 
-## 12.4. AutoSteamPoints (`autosteampoints`)
+## 10.4. AutoSteamPoints (`autosteampoints`)
 
 ### Что делает
 Автоматизирует продажу Steam Community Points.
@@ -709,26 +543,9 @@ ID аккаунта в AutoRent Steam.
 - `⏱ SLA`
 - `🔁 Replay`
 
-### Эквивалентные команды
-
-```text
-/autosteampoints_cfg
-/autosteampoints_help
-/autosteampoints_http_set <base_url> <token> [timeout_sec]
-/autosteampoints_lots
-/autosteampoints_lots_add <lot_id> <points_per_unit>
-/autosteampoints_lots_del <lot_id>
-/autosteampoints_sla <seconds>
-/autosteampoints_replay
-/autosteampoints_mock
-```
-
-### Что делает `/autosteampoints_mock`
-Команда существует, но в продовой версии сообщает, что mock-провайдер отключён. Рабочая настройка — через `/autosteampoints_http_set`.
-
 ---
 
-## 12.5. AutoRent Steam (`autorent_steam`)
+## 10.5. AutoRent Steam (`autorent_steam`)
 
 ### Что делает
 Автоматизирует аренду Steam-аккаунтов.
@@ -763,29 +580,9 @@ ID аккаунта в AutoRent Steam.
 - `🛑 Rotator off`
 - `🌐 Rotator HTTP`
 
-### Эквивалентные команды
-
-```text
-/autorent_cfg
-/autorent_help
-/autorent_lots
-/autorent_lots_add <lot_id> <hours> <game_key>
-/autorent_lots_del <lot_id>
-/autorent_warn <seconds>
-/autorent_default_duration <seconds>
-/autorent_account_add <login> <password> <game_key1,game_key2,...>
-/autorent_accounts
-/autorent_account_disable <id>
-/autorent_account_enable <id>
-/autorent_account_del <id>
-/autorent_rotator_on
-/autorent_rotator_off
-/autorent_rotator_http_set <base_url> <token>
-```
-
 ---
 
-## 12.6. Fragment Stars Buyer (`fragment_stars_buyer`)
+## 10.6. Fragment Stars Buyer (`fragment_stars_buyer`)
 
 ### Что делает
 Автоматически покупает Stars по заданной стратегии.
@@ -818,23 +615,6 @@ ID аккаунта в AutoRent Steam.
 - `🧹 Halt`
 - `♻️ Inventory`
 
-### Эквивалентные команды
-
-```text
-/fragment_help
-/fragment_status
-/fragment_strategy_on <price_ton_per_star> <buy_stars> [min_interval_sec] [max_inventory_stars] [max_total_ton]
-/fragment_strategy_off
-/fragment_risk_set <daily_limit_ton> <slippage_bps> <stoploss_window_sec> <stoploss_drop_percent> <halt_minutes>
-/fragment_provider <mock|http>
-/fragment_http_set <base_url> <token> [timeout_sec]
-/fragment_http_clear
-/fragment_mock_setprice <ton_per_star>
-/fragment_mock_setavail <stars>
-/fragment_halt_clear
-/fragment_inventory_reset
-```
-
 ### Безопасный старт
 Лучше начинать с `mock`:
 
@@ -848,7 +628,7 @@ ID аккаунта в AutoRent Steam.
 
 ---
 
-## 12.7. Steam Gifts Auto Lot (`steamgifts_autolot`)
+## 10.7. Steam Gifts Auto Lot (`steamgifts_autolot`)
 
 ### Что делает
 Связывает лоты FunPay с товарами поставщика и позволяет автоматизировать работу со Steam Gifts.
@@ -878,26 +658,9 @@ ID аккаунта в AutoRent Steam.
 - `➖ Лот`
 - `🔁 Replay`
 
-### Эквивалентные команды
-
-```text
-/steamgifts_help
-/steamgifts_cfg
-/steamgifts_provider http
-/steamgifts_http_set <base_url> <token> [timeout_sec]
-/steamgifts_http_clear
-/steamgifts_sync_interval <sec>
-/steamgifts_markup_default <pct>
-/steamgifts_round_step <step>
-/steamgifts_lots
-/steamgifts_lots_add <lot_id> <ns_sku> [allowed_regions_csv] [markup_pct]
-/steamgifts_lots_del <lot_id>
-/steamgifts_replay
-```
-
 ---
 
-## 12.8. AutoPriceMonitor (`autopricemonitor`)
+## 10.8. AutoPriceMonitor (`autopricemonitor`)
 
 ### Что делает
 Следит за ценами конкурентов и хранит цели мониторинга.
@@ -928,30 +691,12 @@ ID аккаунта в AutoRent Steam.
 - `🙈 Ignore+`
 - `👁 Ignore-`
 
-### Эквивалентные команды
-
-```text
-/apm_help
-/apm_cfg
-/apm_poll <seconds>
-/apm_add_url <name> <url> <my_lot_id> <my_price> [strategy]
-/apm_add_category <name> <kind> <category_id> <my_lot_id> <my_price> [strategy]
-/apm_status
-/apm_enable <target_id>
-/apm_disable <target_id>
-/apm_del <target_id>
-/apm_set <target_id> <field> <value>
-/apm_keywords <target_id> ...
-/apm_ignore_add <target_id> <seller1> [seller2 ...]
-/apm_ignore_del <target_id> <seller1> [seller2 ...]
-```
-
 ### Совет
 Для первого теста лучше начинать со стратегии `notify_only`, чтобы сначала просто получать уведомления.
 
 ---
 
-## 12.9. AutoLog (`autolog`)
+## 10.9. AutoLog (`autolog`)
 
 ### Что делает
 Собирает статистику и умеет экспортировать данные.
@@ -966,18 +711,6 @@ ID аккаунта в AutoRent Steam.
 - `🗓 Месяц`
 - `📄 CSV`
 - `📊 XLSX`
-
-### Эквивалентные команды
-
-```text
-/autolog_stats
-/autolog_stats week
-/autolog_stats month
-/autolog_export
-/autolog_export csv day
-/autolog_export csv week
-/autolog_export xlsx month
-```
 
 ---
 
@@ -1004,7 +737,7 @@ ID аккаунта в AutoRent Steam.
 
 ---
 
-# 13. Дополнительные встроенные модули
+# 11. Дополнительные встроенные модули
 
 Ниже коротко — что означает каждый из дополнительных модулей каталога.
 
@@ -1038,145 +771,3 @@ ID аккаунта в AutoRent Steam.
 Для этих модулей ориентируйся на простое правило: если в карточке нет отдельной кнопки **«⚙️ Настроить»**, значит отдельной пользовательской формы настройки в текущей сборке не предусмотрено.
 
 ---
-
-# 14. Как тестировать бота теперь
-
-## Быстрый тест, что бот живой
-
-```text
-/start
-```
-
-Проверить:
-
-- открывается меню;
-- открываются кнопки аккаунта и плагинов.
-
-## Базовый пользовательский тест
-
-```text
-/start
-/connect
-/check
-/on
-/plugins
-```
-
-Дальше:
-
-1. получить доступ к плагину;
-2. включить плагин;
-3. при необходимости настроить через `⚙️ Настроить`;
-4. сделать тестовый заказ.
-
-## Безопасный тест
-
-Если хочешь минимальный риск, начинай с безопасных режимов:
-
-- `fragment_stars_buyer` — `mock`
-- `autobalance` — `mock provider`
-- `autopricemonitor` — `notify_only`
-
----
-
-# 15. Как выдавать доступ тестерам
-
-Если платежи не используются, доступ выдаёт администратор.
-
-## Пример
-
-```text
-/grant 123456789 autostars 365
-/grant 123456789 autobalance 365
-/grant 123456789 autolotdeactivator 365
-/grant 123456789 autosteampoints 365
-/grant 123456789 autorent_steam 365
-/grant 123456789 fragment_stars_buyer 365
-/grant 123456789 steamgifts_autolot 365
-/grant 123456789 autorefund 365
-/grant 123456789 autolog 365
-/grant 123456789 autopricemonitor 365
-```
-
-При необходимости админ может выдать и дополнительные встроенные плагины из каталога, например:
-
-```text
-/grant 123456789 autoreply 365
-/grant 123456789 ask_tg_username 365
-/grant 123456789 antifraud 365
-```
-
-После этого пользователь всё равно должен сам:
-
-1. открыть `/plugins`;
-2. зайти в карточку нужного плагина;
-3. нажать `✅ Включить`.
-
----
-
-# 16. Что смотреть в логах
-
-Если что-то работает не так, смотри логи контейнеров.
-
-Примеры:
-
-```bash
-docker compose logs -f control_bot
-docker compose logs -f funpay_connector
-docker compose logs -f plugin_router
-docker compose logs -f outbox_dispatcher
-docker compose logs -f plugin_autostars
-docker compose logs -f plugin_autosteampoints
-docker compose logs -f plugin_steamgifts_autolot
-docker compose logs -f plugin_autorent_steam
-docker compose logs -f plugin_fragment_stars_buyer
-docker compose logs -f plugin_autobalance
-docker compose logs -f plugin_autolotdeactivator
-docker compose logs -f plugin_autopricemonitor
-docker compose logs -f plugin_autolog
-docker compose logs -f plugin_autorefund
-```
-
----
-
-# 17. Самый короткий рабочий сценарий
-
-## Для владельца аккаунта
-
-1. `/start`
-2. подключить FunPay
-3. проверить аккаунт
-4. включить слушатель
-5. открыть плагины
-6. получить доступ к нужному плагину
-7. включить плагин
-8. настроить его
-9. сделать тестовый заказ
-
-## Для администратора
-
-1. выдать доступ через `/grant`
-2. объяснить пользователю, какой плагин включить
-3. при необходимости подсказать, какие поля заполнить в настройках
-
----
-
-# 18. Краткий итог
-
-В новой версии бота основной сценарий стал таким:
-
-- **не просто команды, а меню + карточки + формы ввода**;
-- **не просто `/grant`, а ещё и встроенная покупка подписки на 30 дней**;
-- **не просто длинные команды, а ещё и короткие алиасы**;
-- **не просто настройка текстом, а подтверждение сохранения и кнопки возврата**.
-
-Поэтому правильнее пользоваться ботом так:
-
-1. открыть меню;
-2. подключить FunPay;
-3. включить слушатель;
-4. открыть плагин;
-5. купить или получить доступ;
-6. включить плагин;
-7. настраивать его через кнопку **«⚙️ Настроить»**;
-8. использовать команды только там, где это действительно удобнее.
